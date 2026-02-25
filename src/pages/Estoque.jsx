@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { listarProdutos } from '../services/produtos'
+import { listarProdutos, deletarProduto } from '../services/produtos'
 import ProductModal from '../components/ProductModal'
 import './Estoque.css'
 
@@ -109,6 +109,24 @@ export default function Estoque() {
                           }}
                         >
                           ✏️
+                        </button>
+                        <button
+                          className="btn-icon"
+                          title="Excluir"
+                          aria-label="Excluir produto"
+                          onClick={async () => {
+                            const ok = window.confirm('Excluir este produto? Esta ação não pode ser desfeita.')
+                            if (!ok) return
+                            const { error } = await deletarProduto(p.id)
+                            if (error) {
+                              alert('Não foi possível excluir. Verifique permissões/RLS no Supabase.')
+                              return
+                            }
+                            carregar()
+                          }}
+                          style={{ color: '#EF4444', marginLeft: 6 }}
+                        >
+                          🗑️
                         </button>
                       </td>
                     </tr>

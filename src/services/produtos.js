@@ -99,3 +99,11 @@ export async function listarProdutosRecentes(limit = 5) {
   }
   return { data: res.data || [], error: null }
 }
+
+export async function deletarProduto(id) {
+  const { error } = await supabase.from('produtos').delete().eq('id', id)
+  if (error) {
+    return { error }
+  }
+  return { error: null }
+}
