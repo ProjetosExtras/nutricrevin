@@ -17,6 +17,17 @@ export default function Relatorios() {
 
   function parseDate(v) {
     if (!v) return null
+    if (typeof v === 'string') {
+      const br = v.trim()
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(br)) {
+        const [dd, mm, yyyy] = br.split('/')
+        const d = new Date(`${yyyy}-${mm}-${dd}T00:00:00`)
+        if (!isNaN(d.getTime())) {
+          d.setHours(0, 0, 0, 0)
+          return d
+        }
+      }
+    }
     const d = new Date(v)
     if (isNaN(d.getTime())) return null
     d.setHours(0, 0, 0, 0)
@@ -24,9 +35,24 @@ export default function Relatorios() {
   }
   function toBr(d) {
     if (!d) return '-'
-    const dx = new Date(d)
+    const dx = parseDate(d) || new Date(d)
     if (isNaN(dx.getTime())) return '-'
     return dx.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
+  function maskDateBR(value) {
+    const d = String(value || '').replace(/\D/g, '').slice(0, 8)
+    let out = ''
+    if (d.length >= 1) out = d.slice(0, Math.min(2, d.length))
+    if (d.length >= 3) out += '/' + d.slice(2, Math.min(4, d.length))
+    if (d.length >= 5) out += '/' + d.slice(4, 8)
+    return out
+  }
+  function handleDateChange(setter) {
+    return (e) => {
+      const masked = maskDateBR(e.target.value)
+      setter(masked)
+    }
   }
 
   async function getProdutos() {
@@ -178,11 +204,11 @@ export default function Relatorios() {
           <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
-              <input type="date" value={deVal} onChange={(e) => setDeVal(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={deVal} onChange={handleDateChange(setDeVal)} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
-              <input type="date" value={ateVal} onChange={(e) => setAteVal(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={ateVal} onChange={handleDateChange(setAteVal)} />
             </div>
           </div>
           <button className="btn btn-primary" disabled={busy} onClick={gerarValidade}>Gerar PDF</button>
@@ -194,11 +220,11 @@ export default function Relatorios() {
           <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
-              <input type="date" value={deVencer} onChange={(e) => setDeVencer(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={deVencer} onChange={handleDateChange(setDeVencer)} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
-              <input type="date" value={ateVencer} onChange={(e) => setAteVencer(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={ateVencer} onChange={handleDateChange(setAteVencer)} />
             </div>
           </div>
           <button className="btn btn-primary" disabled={busy} onClick={gerarAVencer}>Gerar PDF</button>
@@ -210,11 +236,11 @@ export default function Relatorios() {
           <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
-              <input type="date" value={deEst} onChange={(e) => setDeEst(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={deEst} onChange={handleDateChange(setDeEst)} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
-              <input type="date" value={ateEst} onChange={(e) => setAteEst(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={ateEst} onChange={handleDateChange(setAteEst)} />
             </div>
           </div>
           <button className="btn btn-primary" disabled={busy} onClick={gerarEstoque}>Gerar PDF</button>
@@ -226,11 +252,11 @@ export default function Relatorios() {
           <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
-              <input type="date" value={deVig} onChange={(e) => setDeVig(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={deVig} onChange={handleDateChange(setDeVig)} />
             </div>
             <div style={{ flex: 1 }}>
               <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
-              <input type="date" value={ateVig} onChange={(e) => setAteVig(e.target.value)} />
+              <input type="text" inputMode="numeric" placeholder="DD/MM/AAAA" value={ateVig} onChange={handleDateChange(setAteVig)} />
             </div>
           </div>
           <button className="btn btn-primary" disabled={busy} onClick={gerarVigilancia}>Gerar PDF</button>
