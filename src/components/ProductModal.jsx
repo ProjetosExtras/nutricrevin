@@ -189,7 +189,14 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
             </div>
             <div>
               <label>Armazenamento</label>
-              <input value={form.forma_armazenamento} onChange={(e) => updateField('forma_armazenamento', e.target.value)} />
+              <select value={form.forma_armazenamento} onChange={(e) => updateField('forma_armazenamento', e.target.value)}>
+                <option value="">Selecione</option>
+                <option value="temperatura_ambiente">Temperatura ambiente</option>
+                <option value="refrigerado">Refrigerado (geladeira)</option>
+                <option value="congelado">Congelado (freezer)</option>
+                <option value="seco">Ambiente seco</option>
+                <option value="outro">Outro</option>
+              </select>
             </div>
           </div>
 
