@@ -29,7 +29,8 @@ export default function Dashboard() {
     produtos: 0,
     etiquetasHoje: 0,
     vencidos: 0,
-    lotesA30: 0
+    lotesA30: 0,
+    cadastradosHoje: 0
   })
   const [recentProdutos, setRecentProdutos] = useState([])
 
@@ -90,7 +91,26 @@ export default function Dashboard() {
         lotesA30 = 0
       }
 
-      setStats(prev => ({ ...prev, produtos: produtosCount, vencidos: vencidosCount, lotesA30 }))
+      // Contagem de produtos criados hoje (considera criado_em ou created_at)
+      let cadastradosHoje = 0
+      try {
+        const start = new Date()
+        start.setHours(0, 0, 0, 0)
+        const end = new Date(start)
+        end.setDate(end.getDate() + 1)
+        const startIso = start.toISOString()
+        const endIso = end.toISOString()
+        const orCreated = `and(criado_em.gte.${startIso},criado_em.lt.${endIso}),and(criado_em.is.null,created_at.gte.${startIso},created_at.lt.${endIso})`
+        const resC = await supabase
+          .from('produtos')
+          .select('*', { count: 'exact', head: true })
+          .or(orCreated)
+        cadastradosHoje = resC.count || 0
+      } catch {
+        cadastradosHoje = 0
+      }
+
+      setStats(prev => ({ ...prev, produtos: produtosCount, vencidos: vencidosCount, lotesA30, cadastradosHoje }))
     }
 
     fetchStats()
@@ -135,10 +155,10 @@ export default function Dashboard() {
         </div>
 
         <div className="stat-card">
-          <div className="stat-icon bg-orange">⏰</div>
+          <div className="stat-icon bg-orange">🆕</div>
           <div className="stat-info">
-            <h3>{stats.vencidos}</h3>
-            <p>Produtos Vencidos</p>
+            <h3>{stats.cadastradosHoje}</h3>
+            <p>Cadastrados Hoje</p>
           </div>
         </div>
 
