@@ -118,6 +118,8 @@ export default function Inventario() {
               <thead>
                 <tr>
                   <th>Produto</th>
+                  <th>Lote</th>
+                  <th>Categoria</th>
                   <th>Qtd. atual</th>
                   <th>Qtd. contada</th>
                   <th>Diferença</th>
@@ -131,6 +133,8 @@ export default function Inventario() {
                   return (
                     <tr key={p.id}>
                       <td><span className="product-name">{p.nome}</span></td>
+                      <td>{p.lote || '-'}</td>
+                      <td>{p.categoria || '-'}</td>
                       <td className="text-right">{atual}</td>
                       <td>
                         <input
@@ -148,7 +152,7 @@ export default function Inventario() {
                   )
                 })}
                 {!produtosFiltrados.length ? (
-                  <tr><td colSpan={4} className="empty-table">Sem produtos.</td></tr>
+                  <tr><td colSpan={6} className="empty-table">Sem produtos.</td></tr>
                 ) : null}
               </tbody>
             </table>
