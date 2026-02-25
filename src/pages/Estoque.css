@@ -272,4 +272,17 @@ th {
     border-left: none;
     border-right: none;
   }
+  .modal-header {
+    padding: 1rem;
+  }
+  .modal-body {
+    padding: 0.75rem 1rem 5rem 1rem; /* espaço para o footer */
+  }
+  .modal-footer {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+  .btn.btn-primary, .btn.btn-secondary {
+    flex: 1;
+  }
 }
