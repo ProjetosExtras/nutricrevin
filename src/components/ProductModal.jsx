@@ -165,10 +165,6 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
               <label>Qtd. mínima</label>
               <input type="number" step="0.01" value={form.quantidade_minima} onChange={(e) => updateField('quantidade_minima', e.target.value)} />
             </div>
-            <div>
-              <label>Preço unitário</label>
-              <input type="number" step="0.01" value={form.preco_unitario} onChange={(e) => updateField('preco_unitario', e.target.value)} />
-            </div>
           </div>
 
           <div className="grid-3">
