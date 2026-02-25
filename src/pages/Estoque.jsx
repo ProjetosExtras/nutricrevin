@@ -88,18 +88,18 @@ export default function Estoque() {
                 {produtos.length > 0 ? (
                   produtos.map((p) => (
                     <tr key={p.id}>
-                      <td>
+                      <td data-label="Produto">
                         <div className="product-name">{p.nome}</div>
                       </td>
-                      <td>{p.marca || '-'}</td>
-                      <td>
+                      <td data-label="Marca">{p.marca || '-'}</td>
+                      <td data-label="Lote">
                         <span className="badge badge-gray">{p.lote || 'N/A'}</span>
                       </td>
-                      <td>{p.categoria || '-'}</td>
-                      <td className="text-right font-bold">
+                      <td data-label="Categoria">{p.categoria || '-'}</td>
+                      <td data-label="Qtd." className="text-right font-bold">
                         {p.quantidade}
                       </td>
-                      <td className="text-center">
+                      <td data-label="Ações" className="text-center">
                         <button
                           className="btn-icon"
                           title="Editar"
