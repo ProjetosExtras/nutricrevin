@@ -26,6 +26,7 @@ export default function Layout({ children }) {
     { path: '/estoque', label: 'Estoque', icon: '📦' },
     { path: '/vencimentos', label: 'Vencimentos', icon: '⏰' },
     { path: '/limpeza', label: 'Limpeza', icon: '🧹' },
+    { path: '/inventario', label: 'Inventário', icon: '📋' },
     { path: '/relatorios', label: 'Relatórios', icon: '📑' },
     { path: '/etiquetas', label: 'Etiquetas', icon: '🏷️' },
   ]

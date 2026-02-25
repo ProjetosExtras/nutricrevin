@@ -6,6 +6,7 @@ import Limpeza from './pages/Limpeza'
 import Etiquetas from './pages/Etiquetas'
 import Relatorios from './pages/Relatorios'
 import Vencimentos from './pages/Vencimentos'
+import Inventario from './pages/Inventario'
 import Login from './pages/Login'
 import Layout from './components/Layout'
 import { useEffect, useState } from 'react'
@@ -48,6 +49,7 @@ function App() {
         <Route path="/estoque" element={<Estoque />} />
         <Route path="/vencimentos" element={<Vencimentos />} />
         <Route path="/limpeza" element={<Limpeza />} />
+        <Route path="/inventario" element={<Inventario />} />
         <Route path="/relatorios" element={<Relatorios />} />
         <Route path="/etiquetas" element={<Etiquetas />} />
       </Routes>
