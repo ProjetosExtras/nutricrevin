@@ -11,6 +11,8 @@ export default function Estoque() {
   const [abrirNovo, setAbrirNovo] = useState(false)
   const [editarAberto, setEditarAberto] = useState(false)
   const [produtoEdicao, setProdutoEdicao] = useState(null)
+  const [excluirAberto, setExcluirAberto] = useState(false)
+  const [produtoExcluir, setProdutoExcluir] = useState(null)
 
   const carregar = useCallback(async () => {
     setCarregando(true)
@@ -115,14 +117,8 @@ export default function Estoque() {
                           title="Excluir"
                           aria-label="Excluir produto"
                           onClick={async () => {
-                            const ok = window.confirm('Excluir este produto? Esta ação não pode ser desfeita.')
-                            if (!ok) return
-                            const { error } = await deletarProduto(p.id)
-                            if (error) {
-                              alert('Não foi possível excluir. Verifique permissões/RLS no Supabase.')
-                              return
-                            }
-                            carregar()
+                            setProdutoExcluir(p)
+                            setExcluirAberto(true)
                           }}
                           style={{ color: '#EF4444', marginLeft: 6 }}
                         >
@@ -143,6 +139,41 @@ export default function Estoque() {
           </div>
         )}
       </div>
+      {/* Modal de confirmação de exclusão */}
+      {excluirAberto ? (
+        <div className="modal-backdrop" onClick={() => setExcluirAberto(false)}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Confirmar exclusão</h3>
+              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setExcluirAberto(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Tem certeza que deseja excluir o produto <strong>{produtoExcluir?.nome}</strong>?</p>
+              <p>Esta ação não pode ser desfeita.</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => setExcluirAberto(false)}>Cancelar</button>
+              <button
+                className="btn btn-primary"
+                style={{ backgroundColor: '#EF4444' }}
+                onClick={async () => {
+                  if (!produtoExcluir) return
+                  const { error } = await deletarProduto(produtoExcluir.id)
+                  if (error) {
+                    alert('Não foi possível excluir. Verifique permissões/RLS no Supabase.')
+                    return
+                  }
+                  setExcluirAberto(false)
+                  setProdutoExcluir(null)
+                  carregar()
+                }}
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
       <ProductModal
         open={abrirNovo}
         onClose={() => setAbrirNovo(false)}
