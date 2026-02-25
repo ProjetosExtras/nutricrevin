@@ -1,0 +1,5 @@
+/* Reset de estilos específicos do App */
+#root {
+  width: 100%;
+  min-height: 100vh;
+}

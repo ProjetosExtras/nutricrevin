@@ -1,0 +1,374 @@
+:root {
+  /* Cores Principais - Tema Nutri/Saúde (Verde/Azul Clean) */
+  --primary-color: #059669; /* Verde Esmeralda */
+  --primary-hover: #047857;
+  --secondary-color: #3B82F6; /* Azul Royal */
+  
+  /* Cores de Fundo */
+  --bg-body: #F3F4F6; /* Cinza muito claro */
+  --bg-card: #FFFFFF;
+  --bg-sidebar: #1F2937; /* Cinza escuro */
+
+  /* Cores de Texto */
+  --text-main: #111827; /* Preto suave */
+  --text-secondary: #6B7280; /* Cinza médio */
+  --text-light: #F9FAFB; /* Quase branco */
+
+  /* Cores de Estado */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+  --info: #3B82F6;
+
+  /* Espaçamentos e Bordas */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Layout */
+  --header-height: 64px;
+  --sidebar-width: 260px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-main);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Utilitários de Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  border: 1px solid #E5E7EB;
+}
+
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.w-full { width: 100%; }
+
+/* Form Elements */
+input, select, textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #D1D5DB;
+  border-radius: var(--radius-md);
+  background-color: #fff;
+  font-size: 0.95rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  border: none;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-secondary {
+  background-color: white;
+  border: 1px solid #D1D5DB;
+  color: var(--text-main);
+}
+
+.btn-secondary:hover {
+  background-color: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+/* Tabelas Responsivas */
+.table-container {
+  overflow-x: auto;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid #E5E7EB;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  background: var(--bg-card);
+}
+
+th {
+  background-color: #F9FAFB;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid #E5E7EB;
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E5E7EB;
+  color: var(--text-main);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover td {
+  background-color: #F9FAFB;
+}
+
+/* Alertas */
+.alert {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+}
+.alert-info {
+  background: #DBEAFE;
+  color: #1E3A8A;
+  border-color: #93C5FD;
+}
+
+.alert-error {
+  background: #FEE2E2;
+  color: #991B1B;
+  border-color: #FCA5A5;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-yellow {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+.badge-red {
+  background: #FEE2E2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+/* Etiquetas (Print) */
+.no-print {}
+.labels-grid {
+  --labels-cols: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--labels-cols), 1fr);
+  gap: 12px;
+}
+.label-card {
+  border: 1px dashed #9CA3AF;
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  background: white;
+}
+.labels-page {
+  margin-bottom: 12px;
+}
+.label-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+.label-key { color: #6B7280; }
+.label-val { color: #111827; }
+
+/* Etiqueta de validade nutricional */
+.label-nutri {
+  padding: 10px 12px;
+}
+.label-nutri-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  line-height: 1.1;
+}
+.label-nutri-sub {
+  color: #6B7280;
+  font-size: 0.75rem;
+  margin-bottom: 6px;
+}
+.label-nutri-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+}
+.label-nutri-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.label-nutri-field span {
+  font-size: 0.68rem;
+  color: #6B7280;
+}
+.label-nutri-field strong {
+  font-size: 0.82rem;
+  color: #111827;
+}
+
+/* Cabeçalho/Rodapé de impressão (Relatórios) */
+.print-header,
+.print-footer {
+  display: none;
+}
+.print-header {
+  padding: 8px 0;
+  border-bottom: 1px solid #E5E7EB;
+  font-size: 12px;
+}
+.print-header .title {
+  font-weight: 700;
+}
+.print-header .meta {
+  color: #6B7280;
+}
+.print-footer {
+  padding: 8px 0;
+  border-top: 1px solid #E5E7EB;
+  font-size: 12px;
+  color: #6B7280;
+}
+.print-spacer-top { display: none; }
+.print-spacer-bottom { display: none; }
+.only-print { display: none; }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .labels-grid {
+    gap: 8px;
+  }
+  .label-card {
+    border: 1px solid #E5E7EB;
+  }
+  .labels-page {
+    break-after: page;
+  }
+  .labels-page:last-child {
+    break-after: auto;
+  }
+  .print-header,
+  .print-footer {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    background: #fff;
+  }
+  .print-header { top: 0; }
+  .print-footer { bottom: 0; }
+  .print-spacer-top { display: block; height: 60px; }
+  .print-spacer-bottom { display: block; height: 50px; }
+  .only-print { display: block; }
+}
+
+/* Relatórios: visual */
+.report-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.report-subtitle {
+  color: #6B7280;
+  margin-bottom: 8px;
+}
+.report-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table-container th,
+.table-container td {
+  border: 1px solid #E5E7EB;
+  padding: 6px 8px;
+}
+.table-container thead th {
+  background: #F3F4F6;
+  text-align: left;
+}
+.table-container tbody tr:nth-child(odd) td {
+  background: #FBFBFD;
+}
