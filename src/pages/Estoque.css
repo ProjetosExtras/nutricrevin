@@ -142,9 +142,7 @@ th {
   }
 
   /* Tabela responsiva estilo "cards" */
-  table, thead, tbody, th, td, tr {
-    display: block;
-  }
+  table, thead, tbody, th, td, tr { display: block; }
   thead {
     position: absolute;
     top: -9999px;
@@ -159,31 +157,29 @@ th {
     border-radius: var(--radius-md);
     background: #fff;
   }
-  td {
+  td { 
     border: none;
     border-bottom: 1px solid #F3F4F6;
-    position: relative;
-    padding-left: 50%;
     min-height: 44px;
-    display: flex;
+    padding: 12px;
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 8px;
     align-items: center;
-  }
+    word-break: break-word;
+  } 
   td:last-child {
     border-bottom: none;
   }
   td::before {
     content: attr(data-label);
-    position: absolute;
-    left: 12px;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
+    position: static;
     font-weight: 600;
     color: var(--text-secondary);
   }
   .text-right { text-align: left; }
   .text-center { text-align: left; }
+  .badge { display: inline-block; }
 }
 
 /* Modal simples (local) */
