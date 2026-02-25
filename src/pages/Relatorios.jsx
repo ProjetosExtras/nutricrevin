@@ -1,16 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { listarProdutos } from '../services/produtos'
 
 export default function Relatorios() {
-  const [tipo, setTipo] = useState('validade')
-  const [de, setDe] = useState('')
-  const [ate, setAte] = useState('')
-  const [carregando, setCarregando] = useState(false)
-  const [dados, setDados] = useState([])
+  const [deVal, setDeVal] = useState('')
+  const [ateVal, setAteVal] = useState('')
+  const [deVencer, setDeVencer] = useState('')
+  const [ateVencer, setAteVencer] = useState('')
+  const [deEst, setDeEst] = useState('')
+  const [ateEst, setAteEst] = useState('')
+  const [deVig, setDeVig] = useState('')
+  const [ateVig, setAteVig] = useState('')
+  const [busy, setBusy] = useState(false)
   const [erro, setErro] = useState('')
-  const [titulo, setTitulo] = useState('Relatório de Validade')
 
   function parseDate(v) {
     if (!v) return null
@@ -26,136 +29,53 @@ export default function Relatorios() {
     return dx.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
-  async function gerar() {
-    setCarregando(true)
-    setErro('')
-    const { data, error } = await listarProdutos({ limit: 2000 })
-    if (error) {
-      setErro('Erro ao carregar dados.')
-      setDados([])
-      setCarregando(false)
-      return
-    }
-    const todos = data || []
-    const dDe = parseDate(de)
-    const dAte = parseDate(ate)
-    const hoje = new Date()
-    hoje.setHours(0, 0, 0, 0)
-    function dentroPeriodo(dt) {
-      if (!dt) return false
-      if (dDe && dt < dDe) return false
-      if (dAte && dt > dAte) return false
-      return true
-    }
-    let filtrados = []
-    if (tipo === 'validade') {
-      const inicio = dDe || hoje
-      filtrados = todos.filter(p => {
-        const dt = parseDate(p.validade_final || p.validade_original)
-        if (!dt) return false
-        if (dt < inicio) return false
-        if (dAte && dt > dAte) return false
-        return true
-      })
-    } else if (tipo === 'a_vencer') {
-      const inicio = dDe || hoje
-      filtrados = todos.filter(p => {
-        const dt = parseDate(p.validade_final || p.validade_original)
-        if (!dt) return false
-        if (dt < inicio) return false
-        if (dAte && dt > dAte) return false
-        return true
-      })
-    } else if (tipo === 'estoque') {
-      filtrados = todos.filter(p => {
-        const criado = parseDate(p.criado_em || p.created_at || null)
-        if (!dDe && !dAte) return true
-        return dentroPeriodo(criado)
-      })
-    } else if (tipo === 'vigilancia') {
-      filtrados = todos.filter(p => {
-        const dt = parseDate(p.validade_final || p.validade_original)
-        return dentroPeriodo(dt)
-      })
-    }
-    setDados(filtrados)
-    setCarregando(false)
+  async function getProdutos() {
+    const { data, error } = await listarProdutos({ limit: 5000 })
+    if (error) return { data: [], error }
+    return { data: data || [], error: null }
   }
 
-  useEffect(() => {
-    gerar()
-    if (tipo === 'validade') setTitulo('Relatório de Validade')
-    else if (tipo === 'a_vencer') setTitulo('Relatório de Produtos a Vencer')
-    else if (tipo === 'estoque') setTitulo('Relatório de Estoque')
-    else if (tipo === 'vigilancia') setTitulo('Relatório para Vigilância Sanitária')
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tipo])
+  function filtrarPorPeriodo(lista, getter, dIni, dFim, inicioHojeSeVazio = false) {
+    const dDe = parseDate(dIni)
+    const dAte = parseDate(dFim)
+    const hoje = new Date()
+    hoje.setHours(0, 0, 0, 0)
+    const start = inicioHojeSeVazio ? (dDe || hoje) : dDe
+    return lista.filter((p) => {
+      const dtRaw = getter(p)
+      const dt = parseDate(dtRaw)
+      if (!dt) return false
+      if (start && dt < start) return false
+      if (dAte && dt > dAte) return false
+      return true
+    })
+  }
 
-  const total = dados.length
-  const totalQuantidade = dados.reduce((acc, p) => acc + (Number(p.quantidade ?? 0) || 0), 0)
-
-  const printRef = useRef(null)
-
-  function exportarPDF() {
+  function exportarPDFGenerico({ titulo, head, body, tipo }) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
     const marginX = 40
     let y = 40
-    const tituloDoc = `${titulo}${de ? ` - De ${toBr(de)}` : ''}${ate ? ` - Até ${toBr(ate)}` : ''}`
     const pageWidth = doc.internal.pageSize.getWidth()
     const centerX = pageWidth / 2
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(16)
     doc.setTextColor(0)
-    doc.text(tituloDoc, centerX, y, { align: 'center' })
+    doc.text(titulo, centerX, y, { align: 'center' })
     y += 20
     doc.setFontSize(12)
     doc.text('CREVIN - Associação Esperança e Vida Nova • CNPJ: 01.600.253/0001-59', marginX, y)
     y += 12
-    const itens = total
-    const qtdGeral = totalQuantidade
+    const itens = body.length
+    const qtdGeral = body.reduce((acc, row) => {
+      const last = row[row.length - 1]
+      const maybeQtd = Number(String(last).replace(/\D+/g, '')) || 0
+      return acc + maybeQtd
+    }, 0)
     doc.setTextColor(0)
     doc.setFont('helvetica', 'bold')
-    if (tipo === 'estoque') {
-      doc.text(`Itens: ${itens}`, marginX, y)
-      doc.text(`Quantidade geral: ${qtdGeral}`, marginX + 140, y)
-    } else if (tipo === 'validade' || tipo === 'a_vencer') {
-      doc.text(`Itens: ${itens}`, marginX, y)
-      doc.text(`Quantidade geral: ${qtdGeral}`, marginX + 140, y)
-    } else {
-      doc.text(`Itens: ${itens}`, marginX, y)
-    }
+    doc.text(`Itens: ${itens}`, marginX, y)
+    if (tipo === 'estoque' || tipo === 'validade' || tipo === 'a_vencer') doc.text(`Quantidade geral: ${qtdGeral}`, marginX + 140, y)
     y += 10
-    let head = []
-    let body = []
-    if (tipo === 'validade' || tipo === 'a_vencer') {
-      head = [['Produto', 'Validade', 'Qtd.']]
-      body = (dados || []).map((p) => [
-        p.nome || '-',
-        (p.validade_final || p.validade_original) ? toBr(p.validade_final || p.validade_original) : '-',
-        String(p.quantidade ?? 0),
-      ])
-    } else if (tipo === 'estoque') {
-      head = [['Produto', 'Marca', 'Categoria', 'Lote', 'Qtd.', 'Un.', 'Localização', 'Criado em']]
-      body = (dados || []).map((p) => [
-        p.nome || '-',
-        p.marca || '-',
-        p.categoria || '-',
-        p.lote || '-',
-        String(p.quantidade ?? 0),
-        p.unidade_medida || '-',
-        p.localizacao || '-',
-        (p.criado_em || p.created_at) ? toBr(p.criado_em || p.created_at) : '-',
-      ])
-    } else if (tipo === 'vigilancia') {
-      head = [['Produto', 'Lote', 'Manipulação', 'Validade', 'Armazenamento']]
-      body = (dados || []).map((p) => [
-        p.nome || '-',
-        p.lote || '-',
-        p.data_manipulacao ? toBr(p.data_manipulacao) : '-',
-        (p.validade_final || p.validade_original) ? toBr(p.validade_final || p.validade_original) : '-',
-        p.forma_armazenamento || '-',
-      ])
-    }
     if (!body.length) {
       doc.setFont('helvetica', 'normal')
       doc.setTextColor(120)
@@ -165,10 +85,7 @@ export default function Relatorios() {
         tipo === 'validade' || tipo === 'a_vencer'
           ? { 0: { cellWidth: 300 }, 1: { cellWidth: 120, halign: 'center' }, 2: { cellWidth: 60, halign: 'right' } }
           : tipo === 'estoque'
-          ? {
-              4: { halign: 'right' },
-              7: { halign: 'center' },
-            }
+          ? { 4: { halign: 'right' }, 7: { halign: 'center' } }
           : { 2: { halign: 'center' }, 3: { halign: 'center' } }
       autoTable(doc, {
         startY: y,
@@ -198,184 +115,126 @@ export default function Relatorios() {
     doc.save(fileName)
   }
 
+  async function gerarValidade() {
+    setBusy(true); setErro('')
+    const { data, error } = await getProdutos()
+    if (error) { setErro('Erro ao carregar dados.'); setBusy(false); return }
+    const filtrados = filtrarPorPeriodo(data, (p) => p.validade_final || p.validade_original, deVal, ateVal, true)
+    const head = [['Produto', 'Validade', 'Qtd.']]
+    const body = filtrados.map((p) => [p.nome || '-', (p.validade_final || p.validade_original) ? toBr(p.validade_final || p.validade_original) : '-', String(p.quantidade ?? 0)])
+    const faixa = `${deVal ? `De ${toBr(deVal)}` : ''}${ateVal ? ` • Até ${toBr(ateVal)}` : ''}`
+    exportarPDFGenerico({ titulo: `Relatório de Validade ${faixa}`, head, body, tipo: 'validade' })
+    setBusy(false)
+  }
+  async function gerarAVencer() {
+    setBusy(true); setErro('')
+    const { data, error } = await getProdutos()
+    if (error) { setErro('Erro ao carregar dados.'); setBusy(false); return }
+    const filtrados = filtrarPorPeriodo(data, (p) => p.validade_final || p.validade_original, deVencer, ateVencer, true)
+    const head = [['Produto', 'Validade', 'Qtd.']]
+    const body = filtrados.map((p) => [p.nome || '-', (p.validade_final || p.validade_original) ? toBr(p.validade_final || p.validade_original) : '-', String(p.quantidade ?? 0)])
+    const faixa = `${deVencer ? `De ${toBr(deVencer)}` : ''}${ateVencer ? ` • Até ${toBr(ateVencer)}` : ''}`
+    exportarPDFGenerico({ titulo: `Relatório de Produtos a Vencer ${faixa}`, head, body, tipo: 'a_vencer' })
+    setBusy(false)
+  }
+  async function gerarEstoque() {
+    setBusy(true); setErro('')
+    const { data, error } = await getProdutos()
+    if (error) { setErro('Erro ao carregar dados.'); setBusy(false); return }
+    const filtrados = !deEst && !ateEst ? data : filtrarPorPeriodo(data, (p) => p.criado_em || p.created_at, deEst, ateEst, false)
+    const head = [['Produto', 'Marca', 'Categoria', 'Lote', 'Qtd.', 'Un.', 'Localização', 'Criado em']]
+    const body = filtrados.map((p) => [p.nome || '-', p.marca || '-', p.categoria || '-', p.lote || '-', String(p.quantidade ?? 0), p.unidade_medida || '-', p.localizacao || '-', (p.criado_em || p.created_at) ? toBr(p.criado_em || p.created_at) : '-'])
+    const faixa = `${deEst ? `De ${toBr(deEst)}` : ''}${ateEst ? ` • Até ${toBr(ateEst)}` : ''}`
+    exportarPDFGenerico({ titulo: `Relatório de Estoque ${faixa}`, head, body, tipo: 'estoque' })
+    setBusy(false)
+  }
+  async function gerarVigilancia() {
+    setBusy(true); setErro('')
+    const { data, error } = await getProdutos()
+    if (error) { setErro('Erro ao carregar dados.'); setBusy(false); return }
+    const filtrados = filtrarPorPeriodo(data, (p) => p.validade_final || p.validade_original, deVig, ateVig, false)
+    const head = [['Produto', 'Lote', 'Manipulação', 'Validade', 'Armazenamento']]
+    const body = filtrados.map((p) => [p.nome || '-', p.lote || '-', p.data_manipulacao ? toBr(p.data_manipulacao) : '-', (p.validade_final || p.validade_original) ? toBr(p.validade_final || p.validade_original) : '-', p.forma_armazenamento || '-'])
+    const faixa = `${deVig ? `De ${toBr(deVig)}` : ''}${ateVig ? ` • Até ${toBr(ateVig)}` : ''}`
+    exportarPDFGenerico({ titulo: `Relatório para Vigilância Sanitária ${faixa}`, head, body, tipo: 'vigilancia' })
+    setBusy(false)
+  }
+
   return (
     <div className="container">
-      <div className="print-header">
-        <div className="title">CREVIN - Associação Esperança e Vida Nova • CNPJ: 01.600.253/0001-59</div>
-        <div className="meta">{titulo}{de ? ` • De ${toBr(de)}` : ''}{ate ? ` • Até ${toBr(ate)}` : ''}</div>
-      </div>
-      <div className="print-spacer-top" />
       <div className="page-header" style={{ marginBottom: 12 }}>
         <div className="header-title">
           <h2>Relatórios</h2>
-          <p>Central de relatórios e exportações.</p>
+          <p>Escolha um módulo e gere o PDF específico.</p>
         </div>
       </div>
 
-      <div className="card" style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            <option value="validade">Validade</option>
-            <option value="a_vencer">Produtos a vencer</option>
-            <option value="estoque">Estoque</option>
-            <option value="vigilancia">Vigilância Sanitária</option>
-          </select>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
-            <input type="date" value={de} onChange={(e) => setDe(e.target.value)} />
-          </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
-            <input type="date" value={ate} onChange={(e) => setAte(e.target.value)} />
-          </div>
-          <button className="btn btn-primary" onClick={gerar}>Gerar</button>
-          <button className="btn btn-secondary" onClick={exportarPDF}>Exportar PDF</button>
-          <div style={{ marginLeft: 'auto', color: 'var(--text-secondary)' }}>Total: {total}</div>
-        </div>
-      </div>
+      {erro ? <div className="card"><div className="alert alert-error">{erro}</div></div> : null}
 
-      {erro ? (
-        <div className="card"><div className="alert alert-error">{erro}</div></div>
-      ) : carregando ? (
-        <div className="card">Carregando...</div>
-      ) : (
-        <>
-          <div className="card no-print">
-            Selecione o módulo, período e clique em “Exportar PDF”. O conteúdo do relatório não será listado nesta página.
-          </div>
-          <div className="only-print" ref={printRef}>
-            <div className="card">
-              {tipo === 'validade' && (
-                <div className="table-container">
-                  <div className="report-title">Relatório de Validade</div>
-                  <div className="report-subtitle">{de ? `De ${toBr(de)}` : ''} {ate ? `Até ${toBr(ate)}` : ''}</div>
-                  <div className="report-summary">
-                    <span>Itens: {total}</span>
-                    <span>Quantidade geral: {totalQuantidade}</span>
-                  </div>
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produto</th>
-                        <th>Validade</th>
-                        <th>Qtd.</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dados.length ? dados.map(p => {
-                        const dt = p.validade_final || p.validade_original
-                        return (
-                          <tr key={p.id}>
-                            <td><span className="product-name">{p.nome}</span></td>
-                            <td>{toBr(dt)}</td>
-                            <td>{p.quantidade ?? 0}</td>
-                          </tr>
-                        )
-                      }) : (
-                        <tr><td colSpan={3} className="empty-table">Sem registros.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {tipo === 'a_vencer' && (
-                <div className="table-container">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produto</th>
-                        <th>Marca</th>
-                        <th>Lote</th>
-                        <th>Validade</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dados.length ? dados.map(p => (
-                        <tr key={p.id}>
-                          <td><span className="product-name">{p.nome}</span></td>
-                          <td>{p.marca || '-'}</td>
-                          <td>{p.lote || '-'}</td>
-                          <td>{toBr(p.validade_final || p.validade_original)}</td>
-                        </tr>
-                      )) : (
-                        <tr><td colSpan={4} className="empty-table">Sem registros.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {tipo === 'estoque' && (
-                <div className="table-container">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produto</th>
-                        <th>Marca</th>
-                        <th>Categoria</th>
-                        <th>Lote</th>
-                        <th>Qtd.</th>
-                        <th>Un.</th>
-                        <th>Localização</th>
-                        <th>Criado em</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dados.length ? dados.map(p => (
-                        <tr key={p.id}>
-                          <td><span className="product-name">{p.nome}</span></td>
-                          <td>{p.marca || '-'}</td>
-                          <td>{p.categoria || '-'}</td>
-                          <td>{p.lote || '-'}</td>
-                          <td>{p.quantidade ?? '-'}</td>
-                          <td>{p.unidade_medida || '-'}</td>
-                          <td>{p.localizacao || '-'}</td>
-                          <td>{toBr(p.criado_em || p.created_at)}</td>
-                        </tr>
-                      )) : (
-                        <tr><td colSpan={8} className="empty-table">Sem registros.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-
-              {tipo === 'vigilancia' && (
-                <div className="table-container">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Produto</th>
-                        <th>Lote</th>
-                        <th>Manipulação</th>
-                        <th>Validade</th>
-                        <th>Armazenamento</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dados.length ? dados.map(p => (
-                        <tr key={p.id}>
-                          <td><span className="product-name">{p.nome}</span></td>
-                          <td>{p.lote || '-'}</td>
-                          <td>{toBr(p.data_manipulacao)}</td>
-                          <td>{toBr(p.validade_final || p.validade_original)}</td>
-                          <td>{p.forma_armazenamento || '-'}</td>
-                        </tr>
-                      )) : (
-                        <tr><td colSpan={5} className="empty-table">Sem registros.</td></tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 12 }}>
+        <div className="card">
+          <div className="report-title">Validade</div>
+          <div className="report-subtitle">Produtos por data de validade.</div>
+          <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
+              <input type="date" value={deVal} onChange={(e) => setDeVal(e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
+              <input type="date" value={ateVal} onChange={(e) => setAteVal(e.target.value)} />
             </div>
           </div>
-        </>
-      )}
-      <div className="print-spacer-bottom" />
-      <div className="print-footer">
-        Av. Floriano Peixoto, Qd. 63, Lt 12, Setor Tradicional, Planaltina - Brasília/DF.
+          <button className="btn btn-primary" disabled={busy} onClick={gerarValidade}>Gerar PDF</button>
+        </div>
+
+        <div className="card">
+          <div className="report-title">Produtos a Vencer</div>
+          <div className="report-subtitle">Itens com validade no período.</div>
+          <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
+              <input type="date" value={deVencer} onChange={(e) => setDeVencer(e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
+              <input type="date" value={ateVencer} onChange={(e) => setAteVencer(e.target.value)} />
+            </div>
+          </div>
+          <button className="btn btn-primary" disabled={busy} onClick={gerarAVencer}>Gerar PDF</button>
+        </div>
+
+        <div className="card">
+          <div className="report-title">Estoque</div>
+          <div className="report-subtitle">Listagem geral com data de criação.</div>
+          <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
+              <input type="date" value={deEst} onChange={(e) => setDeEst(e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
+              <input type="date" value={ateEst} onChange={(e) => setAteEst(e.target.value)} />
+            </div>
+          </div>
+          <button className="btn btn-primary" disabled={busy} onClick={gerarEstoque}>Gerar PDF</button>
+        </div>
+
+        <div className="card">
+          <div className="report-title">Vigilância Sanitária</div>
+          <div className="report-subtitle">Com dados de manipulação, validade e armazenamento.</div>
+          <div style={{ display: 'flex', gap: 8, margin: '8px 0' }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>De</label>
+              <input type="date" value={deVig} onChange={(e) => setDeVig(e.target.value)} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Até</label>
+              <input type="date" value={ateVig} onChange={(e) => setAteVig(e.target.value)} />
+            </div>
+          </div>
+          <button className="btn btn-primary" disabled={busy} onClick={gerarVigilancia}>Gerar PDF</button>
+        </div>
       </div>
     </div>
   )
