@@ -88,6 +88,7 @@ export default function Estoque() {
                   <th>Produto</th>
                   <th>Marca</th>
                   <th>Validade</th>
+                  <th>Lote</th>
                   <th>Categoria</th>
                   <th className="text-right">Qtd.</th>
                   <th className="text-center">Ações</th>
@@ -103,6 +104,9 @@ export default function Estoque() {
                       <td data-label="Marca">{p.marca || '-'}</td>
                       <td data-label="Validade">
                         <span className="badge badge-gray">{toBr(p.validade_final || p.validade_original)}</span>
+                      </td>
+                      <td data-label="Lote">
+                        <span className="badge badge-gray">{p.lote || 'N/A'}</span>
                       </td>
                       <td data-label="Categoria">{p.categoria || '-'}</td>
                       <td data-label="Qtd." className="text-right font-bold">
@@ -136,7 +140,7 @@ export default function Estoque() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="empty-table">
+                    <td colSpan={7} className="empty-table">
                       Nenhum produto encontrado.
                     </td>
                   </tr>
