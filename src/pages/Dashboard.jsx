@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import './Dashboard.css'
-import { listarProdutosRecentes } from '../services/produtos'
+import { listarProdutosRecentes, listarProdutos } from '../services/produtos'
+import { ajustarEstoque } from '../services/inventario'
+import { useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
   const formatDatePt = (value) => {
@@ -33,6 +35,16 @@ export default function Dashboard() {
     cadastradosHoje: 0
   })
   const [recentProdutos, setRecentProdutos] = useState([])
+  const [saidaAberta, setSaidaAberta] = useState(false)
+  const [saidaLista, setSaidaLista] = useState([])
+  const [saidaForm, setSaidaForm] = useState({ produtoId: '', quantidade: '', motivo: '' })
+  const [saidaCarregando, setSaidaCarregando] = useState(false)
+  const [saidaErro, setSaidaErro] = useState('')
+  const [entradaAberta, setEntradaAberta] = useState(false)
+  const [entradaLista, setEntradaLista] = useState([])
+  const [entradaForm, setEntradaForm] = useState({ produtoId: '', quantidade: '', motivo: '' })
+  const [entradaCarregando, setEntradaCarregando] = useState(false)
+  const [entradaErro, setEntradaErro] = useState('')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user ?? null))
@@ -122,6 +134,73 @@ export default function Dashboard() {
     fetchRecent()
   }, [])
 
+  async function abrirSaida() {
+    setSaidaErro('')
+    setSaidaAberta(true)
+    const { data } = await listarProdutos({ limit: 200 })
+    setSaidaLista(data || [])
+  }
+
+  function updateSaida(key, value) {
+    setSaidaForm(prev => ({ ...prev, [key]: value }))
+  }
+
+  async function confirmarSaida(e) {
+    e.preventDefault()
+    setSaidaErro('')
+    const pid = Number(saidaForm.produtoId)
+    const qtd = Number(saidaForm.quantidade)
+    if (!pid || !qtd || isNaN(qtd) || qtd <= 0) {
+      setSaidaErro('Selecione um produto e informe a quantidade.')
+      return
+    }
+    setSaidaCarregando(true)
+    const { error } = await ajustarEstoque(pid, 'DEC', qtd, saidaForm.motivo || 'Saída')
+    setSaidaCarregando(false)
+    if (error) {
+      setSaidaErro(error.message || 'Falha ao registrar saída.')
+      return
+    }
+    setSaidaAberta(false)
+    setSaidaForm({ produtoId: '', quantidade: '', motivo: '' })
+    const { data } = await listarProdutosRecentes(5)
+    setRecentProdutos(data || [])
+  }
+
+  async function abrirEntrada() {
+    setEntradaErro('')
+    setEntradaAberta(true)
+    const { data } = await listarProdutos({ limit: 200 })
+    setEntradaLista(data || [])
+  }
+
+  function updateEntrada(key, value) {
+    setEntradaForm(prev => ({ ...prev, [key]: value }))
+  }
+
+  async function confirmarEntrada(e) {
+    e.preventDefault()
+    setEntradaErro('')
+    const pid = Number(entradaForm.produtoId)
+    const qtd = Number(entradaForm.quantidade)
+    if (!pid || !qtd || isNaN(qtd) || qtd <= 0) {
+      setEntradaErro('Selecione um produto e informe a quantidade.')
+      return
+    }
+    setEntradaCarregando(true)
+    const { error } = await ajustarEstoque(pid, 'INC', qtd, entradaForm.motivo || 'Entrada')
+    setEntradaCarregando(false)
+    if (error) {
+      setEntradaErro(error.message || 'Falha ao registrar entrada.')
+      return
+    }
+    setEntradaAberta(false)
+    setEntradaForm({ produtoId: '', quantidade: '', motivo: '' })
+    const { data } = await listarProdutosRecentes(5)
+    setRecentProdutos(data || [])
+  }
+
+  const navigate = useNavigate()
   return (
     <div className="dashboard-container">
       <div className="welcome-section">
@@ -211,12 +290,92 @@ export default function Dashboard() {
         <div className="card quick-actions">
           <h3>Ações Rápidas</h3>
           <div className="actions-grid">
-            <button className="action-btn">Nova Etiqueta</button>
-            <button className="action-btn">Registrar Entrada</button>
-            <button className="action-btn">Registrar Saída</button>
+            <button className="action-btn" onClick={() => navigate('/etiquetas')}>Nova Etiqueta</button>
+            <button className="action-btn" onClick={abrirEntrada}>Registrar Entrada</button>
+            <button className="action-btn" onClick={abrirSaida}>Registrar Saída</button>
           </div>
         </div>
       </div>
+      {saidaAberta ? (
+        <div className="modal-backdrop" onClick={() => setSaidaAberta(false)}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Registrar Saída</h3>
+              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setSaidaAberta(false)}>×</button>
+            </div>
+            <form className="modal-body" onSubmit={confirmarSaida}>
+              {saidaErro ? <div className="alert-error">{saidaErro}</div> : null}
+              <div className="grid-2">
+                <div>
+                  <label>Produto</label>
+                  <select value={saidaForm.produtoId} onChange={(e) => updateSaida('produtoId', e.target.value)}>
+                    <option value="">Selecione</option>
+                    {saidaLista.map(p => (
+                      <option key={p.id} value={p.id}>{p.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label>Quantidade</label>
+                  <input type="number" min="0.01" step="0.01" value={saidaForm.quantidade} onChange={(e) => updateSaida('quantidade', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid-1">
+                <div>
+                  <label>Motivo</label>
+                  <input value={saidaForm.motivo} onChange={(e) => updateSaida('motivo', e.target.value)} placeholder="Ex.: consumo, descarte, doação" />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setSaidaAberta(false)} disabled={saidaCarregando}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={saidaCarregando}>
+                  {saidaCarregando ? 'Salvando...' : 'Confirmar Saída'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
+      {entradaAberta ? (
+        <div className="modal-backdrop" onClick={() => setEntradaAberta(false)}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Registrar Entrada</h3>
+              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setEntradaAberta(false)}>×</button>
+            </div>
+            <form className="modal-body" onSubmit={confirmarEntrada}>
+              {entradaErro ? <div className="alert-error">{entradaErro}</div> : null}
+              <div className="grid-2">
+                <div>
+                  <label>Produto</label>
+                  <select value={entradaForm.produtoId} onChange={(e) => updateEntrada('produtoId', e.target.value)}>
+                    <option value="">Selecione</option>
+                    {entradaLista.map(p => (
+                      <option key={p.id} value={p.id}>{p.nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label>Quantidade</label>
+                  <input type="number" min="0.01" step="0.01" value={entradaForm.quantidade} onChange={(e) => updateEntrada('quantidade', e.target.value)} />
+                </div>
+              </div>
+              <div className="grid-1">
+                <div>
+                  <label>Motivo</label>
+                  <input value={entradaForm.motivo} onChange={(e) => updateEntrada('motivo', e.target.value)} placeholder="Ex.: compra, doação, correção" />
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={() => setEntradaAberta(false)} disabled={entradaCarregando}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" disabled={entradaCarregando}>
+                  {entradaCarregando ? 'Salvando...' : 'Confirmar Entrada'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
