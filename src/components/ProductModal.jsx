@@ -138,7 +138,12 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
           <div className="grid-3">
             <div>
               <label>Categoria</label>
-              <input value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)} />
+              <select value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)}>
+                <option value="">Selecione</option>
+                <option value="Cereais">Cereais</option>
+                <option value="Leguminosas">Leguminosas</option>
+                <option value="Oleaginosas">Oleaginosas</option>
+              </select>
             </div>
             <div>
               <label>Lote</label>
