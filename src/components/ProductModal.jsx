@@ -167,14 +167,10 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
             </div>
           </div>
 
-          <div className="grid-3">
+          <div className="grid-2">
             <div>
               <label>Validade original</label>
               <input type="date" value={form.validade_original} onChange={(e) => updateField('validade_original', e.target.value)} />
-            </div>
-            <div>
-              <label>Data manipulação</label>
-              <input type="date" value={form.data_manipulacao} onChange={(e) => updateField('data_manipulacao', e.target.value)} />
             </div>
             <div>
               <label>Validade final</label>
