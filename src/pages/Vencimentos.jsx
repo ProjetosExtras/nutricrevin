@@ -121,6 +121,7 @@ export default function Vencimentos() {
                     <th>Marca</th>
                     <th>Lote</th>
                     <th>Validade</th>
+                    <th>QTD</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -131,12 +132,13 @@ export default function Vencimentos() {
                       <td>{p.marca || '-'}</td>
                       <td>{p.lote || '-'}</td>
                       <td>{formatDate(p.validade_final || p.validade_original)}</td>
+                      <td className="text-right">{p.quantidade ?? '-'}</td>
                       <td>
                         <span className="badge badge-red">Vencido</span>
                       </td>
                     </tr>
                   )) : (
-                    <tr><td colSpan={5} className="empty-table">Nenhum produto vencido.</td></tr>
+                    <tr><td colSpan={6} className="empty-table">Nenhum produto vencido.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -153,6 +155,7 @@ export default function Vencimentos() {
                     <th>Marca</th>
                     <th>Lote</th>
                     <th>Validade</th>
+                    <th>QTD</th>
                     <th>Em</th>
                   </tr>
                 </thead>
@@ -166,6 +169,7 @@ export default function Vencimentos() {
                         <td>{p.marca || '-'}</td>
                         <td>{p.lote || '-'}</td>
                         <td>{formatDate(d)}</td>
+                        <td className="text-right">{p.quantidade ?? '-'}</td>
                         <td>
                           <span className="badge badge-yellow">
                             {rest === 0 ? 'Hoje' : `${rest} dia(s)`}
@@ -174,7 +178,7 @@ export default function Vencimentos() {
                       </tr>
                     )
                   }) : (
-                    <tr><td colSpan={5} className="empty-table">Nenhum produto a vencer no período.</td></tr>
+                    <tr><td colSpan={6} className="empty-table">Nenhum produto a vencer no período.</td></tr>
                   )}
                 </tbody>
               </table>
