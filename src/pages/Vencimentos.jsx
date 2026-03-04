@@ -121,7 +121,7 @@ export default function Vencimentos() {
                     <th>Marca</th>
                     <th>Lote</th>
                     <th>Validade</th>
-                    <th>QTD</th>
+                    <th>Qtd.</th>
                     <th>Status</th>
                   </tr>
                 </thead>
@@ -155,7 +155,7 @@ export default function Vencimentos() {
                     <th>Marca</th>
                     <th>Lote</th>
                     <th>Validade</th>
-                    <th>QTD</th>
+                    <th>Qtd.</th>
                     <th>Em</th>
                   </tr>
                 </thead>
