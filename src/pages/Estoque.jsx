@@ -14,6 +14,13 @@ export default function Estoque() {
   const [excluirAberto, setExcluirAberto] = useState(false)
   const [produtoExcluir, setProdutoExcluir] = useState(null)
 
+  function toBr(d) {
+    if (!d) return '-'
+    const dx = new Date(d)
+    if (isNaN(dx.getTime())) return '-'
+    return dx.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
   const carregar = useCallback(async () => {
     setCarregando(true)
     const { data, error } = await listarProdutos({ search: busca, limit: 100 })
@@ -80,7 +87,7 @@ export default function Estoque() {
                 <tr>
                   <th>Produto</th>
                   <th>Marca</th>
-                  <th>Lote</th>
+                  <th>Validade</th>
                   <th>Categoria</th>
                   <th className="text-right">Qtd.</th>
                   <th className="text-center">Ações</th>
@@ -94,8 +101,8 @@ export default function Estoque() {
                         <div className="product-name">{p.nome}</div>
                       </td>
                       <td data-label="Marca">{p.marca || '-'}</td>
-                      <td data-label="Lote">
-                        <span className="badge badge-gray">{p.lote || 'N/A'}</span>
+                      <td data-label="Validade">
+                        <span className="badge badge-gray">{toBr(p.validade_final || p.validade_original)}</span>
                       </td>
                       <td data-label="Categoria">{p.categoria || '-'}</td>
                       <td data-label="Qtd." className="text-right font-bold">

@@ -181,18 +181,19 @@ export default function Dashboard() {
                   <tr>
                     <th>Produto</th>
                     <th>Marca</th>
-                    <th>Lote</th>
+                    <th>Validade</th>
                     <th>Criado em</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentProdutos.map((p) => {
                     const criado = p.criado_em || p.created_at || null
+                    const validade = p.validade_final || p.validade_original || null
                     return (
                       <tr key={p.id}>
                         <td><div className="product-name">{p.nome}</div></td>
                         <td>{p.marca || '-'}</td>
-                        <td>{p.lote || '-'}</td>
+                        <td>{formatDatePt(validade)}</td>
                         <td>{formatDateTimeBr(criado)}</td>
                       </tr>
                     )

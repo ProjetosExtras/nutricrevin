@@ -51,6 +51,13 @@ export default function Inventario() {
     )
   }, [produtos, busca])
 
+  function toBrDate(v) {
+    if (!v) return '-'
+    const d = new Date(v)
+    if (isNaN(d.getTime())) return '-'
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
   function setQtdContada(id, v) {
     setContagem(prev => ({ ...prev, [id]: v }))
   }
@@ -118,7 +125,7 @@ export default function Inventario() {
               <thead>
                 <tr>
                   <th>Produto</th>
-                  <th>Lote</th>
+                  <th>Validade</th>
                   <th>Categoria</th>
                   <th>Qtd. atual</th>
                   <th>Qtd. contada</th>
@@ -133,7 +140,7 @@ export default function Inventario() {
                   return (
                     <tr key={p.id}>
                       <td><span className="product-name">{p.nome}</span></td>
-                      <td>{p.lote || '-'}</td>
+                      <td>{toBrDate(p.validade_final || p.validade_original)}</td>
                       <td>{p.categoria || '-'}</td>
                       <td className="text-right">{atual}</td>
                       <td>
