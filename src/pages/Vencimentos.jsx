@@ -119,6 +119,7 @@ export default function Vencimentos() {
                   <tr>
                     <th>Produto</th>
                     <th>Marca</th>
+                    <th>Localização</th>
                     <th>Lote</th>
                     <th>Validade</th>
                     <th>Qtd.</th>
@@ -130,6 +131,7 @@ export default function Vencimentos() {
                     <tr key={`v-${p.id}`}>
                       <td><span className="product-name">{p.nome}</span></td>
                       <td>{p.marca || '-'}</td>
+                      <td>{p.localizacao || '-'}</td>
                       <td>{p.lote || '-'}</td>
                       <td>{formatDate(p.validade_final || p.validade_original)}</td>
                       <td className="text-right">{p.quantidade ?? '-'}</td>
@@ -138,7 +140,7 @@ export default function Vencimentos() {
                       </td>
                     </tr>
                   )) : (
-                    <tr><td colSpan={6} className="empty-table">Nenhum produto vencido.</td></tr>
+                    <tr><td colSpan={7} className="empty-table">Nenhum produto vencido.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -153,6 +155,7 @@ export default function Vencimentos() {
                   <tr>
                     <th>Produto</th>
                     <th>Marca</th>
+                    <th>Localização</th>
                     <th>Lote</th>
                     <th>Validade</th>
                     <th>Qtd.</th>
@@ -167,6 +170,7 @@ export default function Vencimentos() {
                       <tr key={`p-${p.id}`}>
                         <td><span className="product-name">{p.nome}</span></td>
                         <td>{p.marca || '-'}</td>
+                        <td>{p.localizacao || '-'}</td>
                         <td>{p.lote || '-'}</td>
                         <td>{formatDate(d)}</td>
                         <td className="text-right">{p.quantidade ?? '-'}</td>
@@ -178,7 +182,7 @@ export default function Vencimentos() {
                       </tr>
                     )
                   }) : (
-                    <tr><td colSpan={6} className="empty-table">Nenhum produto a vencer no período.</td></tr>
+                    <tr><td colSpan={7} className="empty-table">Nenhum produto a vencer no período.</td></tr>
                   )}
                 </tbody>
               </table>
