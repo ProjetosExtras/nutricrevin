@@ -161,22 +161,14 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
             </div>
           </div>
 
-          <div className="grid-3">
+          <div className="grid-1">
             <div>
               <label>Quantidade*</label>
               <input type="number" step="0.01" value={form.quantidade} onChange={(e) => updateField('quantidade', e.target.value)} />
             </div>
-            <div>
-              <label>Qtd. mínima</label>
-              <input type="number" step="0.01" value={form.quantidade_minima} onChange={(e) => updateField('quantidade_minima', e.target.value)} />
-            </div>
           </div>
 
-          <div className="grid-2">
-            <div>
-              <label>Validade original</label>
-              <input type="date" value={form.validade_original} onChange={(e) => updateField('validade_original', e.target.value)} />
-            </div>
+          <div className="grid-1">
             <div>
               <label>Validade final</label>
               <input type="date" value={form.validade_final} onChange={(e) => updateField('validade_final', e.target.value)} />
