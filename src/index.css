@@ -1,8 +1,14 @@
+/* Tipografia moderna */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
   /* Cores Principais - Tema Nutri/Saúde (Verde/Azul Clean) */
   --primary-color: #059669; /* Verde Esmeralda */
   --primary-hover: #047857;
   --secondary-color: #3B82F6; /* Azul Royal */
+  /* Acentos tecnológicos */
+  --accent-color: #22D3EE; /* Cyan neon */
+  --accent-glow: rgba(34, 211, 238, 0.35);
   
   /* Cores de Fundo */
   --bg-body: #F3F4F6; /* Cinza muito claro */
@@ -106,7 +112,7 @@ input, select, textarea {
 input:focus, select:focus, textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12), 0 0 0 6px var(--accent-glow);
 }
 
 .btn {
@@ -121,12 +127,14 @@ input:focus, select:focus, textarea:focus {
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
-  color: white;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
+  filter: brightness(0.95);
+  box-shadow: 0 0 0 3px var(--accent-glow), 0 6px 18px rgba(59, 130, 246, 0.25);
 }
 
 .btn-secondary {
@@ -162,6 +170,9 @@ th {
   color: var(--text-secondary);
   border-bottom: 1px solid #E5E7EB;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 td {
@@ -186,6 +197,7 @@ tr:hover td {
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   border: 1px solid transparent;
+  box-shadow: var(--shadow-sm);
 }
 .alert-info {
   background: #DBEAFE;

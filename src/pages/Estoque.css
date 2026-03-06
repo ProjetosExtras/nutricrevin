@@ -186,7 +186,8 @@ th {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: saturate(160%) blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,7 +196,8 @@ th {
 .modal {
   width: 95%;
   max-width: 780px;
-  background: #fff;
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   border: 1px solid #E5E7EB;
@@ -211,7 +213,7 @@ th {
   justify-content: space-between;
   position: sticky;
   top: 0;
-  background: #fff;
+  background: rgba(255,255,255,0.95);
   z-index: 1;
 }
 .modal-body {
