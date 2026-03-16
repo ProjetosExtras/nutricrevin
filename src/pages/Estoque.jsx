@@ -12,6 +12,8 @@ export default function Estoque() {
   const [pagina, setPagina] = useState(1)
   const [total, setTotal] = useState(0)
   const [abrirNovo, setAbrirNovo] = useState(false)
+  const [detalhesAberto, setDetalhesAberto] = useState(false)
+  const [produtoDetalhes, setProdutoDetalhes] = useState(null)
   const [editarAberto, setEditarAberto] = useState(false)
   const [produtoEdicao, setProdutoEdicao] = useState(null)
   const [excluirAberto, setExcluirAberto] = useState(false)
@@ -152,11 +154,23 @@ export default function Estoque() {
                       <td data-label="Ações" className="text-center">
                         <button
                           className="btn-icon"
+                          title="Detalhes"
+                          aria-label="Ver detalhes do produto"
+                          onClick={() => {
+                            setProdutoDetalhes(p)
+                            setDetalhesAberto(true)
+                          }}
+                        >
+                          🔎
+                        </button>
+                        <button
+                          className="btn-icon"
                           title="Editar"
                           onClick={() => {
                             setProdutoEdicao(p)
                             setEditarAberto(true)
                           }}
+                          style={{ marginLeft: 6 }}
                         >
                           ✏️
                         </button>
@@ -224,6 +238,83 @@ export default function Estoque() {
             >
               Próxima
             </button>
+          </div>
+        </div>
+      ) : null}
+      {detalhesAberto ? (
+        <div className="modal-backdrop" onClick={() => setDetalhesAberto(false)}>
+          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Detalhes do produto</h3>
+              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setDetalhesAberto(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <div className="grid-2">
+                <div>
+                  <label>Nome</label>
+                  <input value={produtoDetalhes?.nome || ''} readOnly />
+                </div>
+                <div>
+                  <label>Marca</label>
+                  <input value={produtoDetalhes?.marca || ''} readOnly />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div>
+                  <label>Categoria</label>
+                  <input value={produtoDetalhes?.categoria || ''} readOnly />
+                </div>
+                <div>
+                  <label>Lote</label>
+                  <input value={produtoDetalhes?.lote || ''} readOnly />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div>
+                  <label>Quantidade</label>
+                  <input value={produtoDetalhes?.quantidade ?? ''} readOnly />
+                </div>
+                <div>
+                  <label>Unidade</label>
+                  <input value={produtoDetalhes?.unidade_medida || ''} readOnly />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div>
+                  <label>Validade final</label>
+                  <input value={toBr(produtoDetalhes?.validade_final || produtoDetalhes?.validade_original)} readOnly />
+                </div>
+                <div>
+                  <label>Localização</label>
+                  <input value={produtoDetalhes?.localizacao || ''} readOnly />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div>
+                  <label>Armazenamento</label>
+                  <input value={produtoDetalhes?.forma_armazenamento || ''} readOnly />
+                </div>
+                <div>
+                  <label>Fornecedor</label>
+                  <input value={produtoDetalhes?.fornecedor || ''} readOnly />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div>
+                  <label>Preço unitário</label>
+                  <input value={produtoDetalhes?.preco_unitario ?? ''} readOnly />
+                </div>
+              </div>
+              <div className="grid-1">
+                <div>
+                  <label>Observações</label>
+                  <textarea value={produtoDetalhes?.observacoes || ''} readOnly rows={3} />
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={() => setDetalhesAberto(false)}>Fechar</button>
+            </div>
           </div>
         </div>
       ) : null}
