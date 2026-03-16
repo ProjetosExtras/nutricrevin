@@ -63,7 +63,7 @@ export default function Inventario() {
   }
 
   async function aplicarContagem() {
-    const entries = Object.entries(contagem).filter(([id, v]) => v !== '' && !isNaN(Number(v)))
+    const entries = Object.entries(contagem).filter(([, v]) => v !== '' && !isNaN(Number(v)))
     if (!entries.length) return
     setCarregando(true)
     for (const [idStr, vStr] of entries) {
