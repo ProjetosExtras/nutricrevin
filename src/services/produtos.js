@@ -1,18 +1,28 @@
 import { supabase } from '../lib/supabaseClient'
 
-export async function listarProdutos({ search = '', categoria = '', limit = 50 } = {}) {
-  const query = supabase.from('produtos').select('*').limit(limit)
+export async function listarProdutos({ search = '', categoria = '', limit = 50, page = null, offset = null, withCount = false } = {}) {
+  const query = withCount ? supabase.from('produtos').select('*', { count: 'exact' }) : supabase.from('produtos').select('*')
   if (search) {
     query.or(`nome.ilike.%${search}%,marca.ilike.%${search}%,lote.ilike.%${search}%`)
   }
   if (categoria) {
     query.eq('categoria', categoria)
   }
-  const { data, error } = await query
-  if (error) {
-    return { data: [], error }
+  if (offset !== null && offset !== undefined) {
+    const from = Number(offset) || 0
+    query.range(from, from + limit - 1)
+  } else if (page !== null && page !== undefined) {
+    const p = Math.max(1, Number(page) || 1)
+    const from = (p - 1) * limit
+    query.range(from, from + limit - 1)
+  } else {
+    query.limit(limit)
   }
-  return { data, error: null }
+  const { data, error, count } = await query
+  if (error) {
+    return { data: [], error, count: withCount ? 0 : null }
+  }
+  return { data, error: null, count: withCount ? (count || 0) : null }
 }
 
 export async function criarProduto(produto) {

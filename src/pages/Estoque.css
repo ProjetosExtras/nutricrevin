@@ -189,3 +189,45 @@ th {
   padding: 0.5rem 0.75rem;
   border-radius: var(--radius-md);
 }
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 4px 0 4px;
+}
+
+.pagination-meta {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.pagination-page {
+  padding: 0.5rem 0.85rem;
+}
+
+.pagination-gap {
+  color: var(--text-secondary);
+  padding: 0 4px;
+  user-select: none;
+}
+
+@media (max-width: 600px) {
+  .pagination-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 0 0 0;
+  }
+  .pagination {
+    justify-content: center;
+  }
+}
