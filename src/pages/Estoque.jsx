@@ -1,9 +1,11 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { listarProdutos, deletarProduto } from '../services/produtos'
 import ProductModal from '../components/ProductModal'
 import './Estoque.css'
 
 export default function Estoque() {
+  const navigate = useNavigate()
   const [produtos, setProdutos] = useState([])
   const [carregando, setCarregando] = useState(true)
   const [busca, setBusca] = useState('')
@@ -160,6 +162,15 @@ export default function Estoque() {
                           }}
                         >
                           🔎
+                        </button>
+                        <button
+                          className="btn-icon"
+                          title="Gerar etiqueta"
+                          aria-label="Gerar etiqueta do produto"
+                          onClick={() => navigate('/etiquetas', { state: { produtoParaEtiqueta: p } })}
+                          style={{ marginLeft: 6 }}
+                        >
+                          🏷️
                         </button>
                         <button
                           className="btn-icon"
