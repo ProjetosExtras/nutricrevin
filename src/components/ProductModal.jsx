@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { criarProduto, atualizarProduto } from '../services/produtos'
+import Modal from './Modal'
 
 export default function ProductModal({ open, onClose, onCreated, mode = 'create', initial = null, onUpdated }) {
   const [form, setForm] = useState({
@@ -102,118 +103,110 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="produto-modal-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="modal-header">
-          <h3 id="produto-modal-title">{mode === 'edit' ? 'Editar Produto' : 'Novo Produto'}</h3>
-          <button
-            type="button"
-            aria-label="Fechar"
-            className="btn btn-secondary"
-            onClick={onClose}
-          >
-            ×
+    <Modal open={open} onClose={onClose} size="lg" labelledBy="produto-modal-title">
+      <div className="modal-header">
+        <h3 id="produto-modal-title">{mode === 'edit' ? 'Editar Produto' : 'Novo Produto'}</h3>
+        <button
+          type="button"
+          aria-label="Fechar"
+          className="btn btn-secondary"
+          onClick={onClose}
+        >
+          ×
+        </button>
+      </div>
+      <form className="modal-body" onSubmit={handleSubmit}>
+        {erro ? <div className="alert-error">{erro}</div> : null}
+
+        <div className="grid-2">
+          <div>
+            <label>Nome*</label>
+            <input value={form.nome} onChange={(e) => updateField('nome', e.target.value)} />
+          </div>
+          <div>
+            <label>Marca</label>
+            <input value={form.marca} onChange={(e) => updateField('marca', e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid-3">
+          <div>
+            <label>Categoria</label>
+            <select value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)}>
+              <option value="">Selecione</option>
+              <option value="Cereais">Cereais</option>
+              <option value="Leguminosas">Leguminosas</option>
+              <option value="Oleaginosas">Oleaginosas</option>
+              <option value="Industrializados">Industrializados</option>
+              <option value="Laticínios">Laticínios</option>
+            </select>
+          </div>
+          <div>
+            <label>Lote</label>
+            <input value={form.lote} onChange={(e) => updateField('lote', e.target.value)} />
+          </div>
+          <div>
+            <label>Unidade</label>
+            <select value={form.unidade_medida} onChange={(e) => updateField('unidade_medida', e.target.value)}>
+              <option value="unidade">unidade</option>
+              <option value="kg">kg</option>
+              <option value="g">g</option>
+              <option value="l">l</option>
+              <option value="ml">ml</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid-1">
+          <div>
+            <label>Quantidade*</label>
+            <input type="number" step="0.01" value={form.quantidade} onChange={(e) => updateField('quantidade', e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid-1">
+          <div>
+            <label>Validade final</label>
+            <input type="date" value={form.validade_final} onChange={(e) => updateField('validade_final', e.target.value)} />
+          </div>
+        </div>
+
+        <div className="grid-2">
+          <div>
+            <label>Localização</label>
+            <input value={form.localizacao} onChange={(e) => updateField('localizacao', e.target.value)} />
+          </div>
+          <div>
+            <label>Armazenamento</label>
+            <select value={form.forma_armazenamento} onChange={(e) => updateField('forma_armazenamento', e.target.value)}>
+              <option value="">Selecione</option>
+              <option value="temperatura_ambiente">Temperatura ambiente</option>
+              <option value="refrigerado">Refrigerado (geladeira)</option>
+              <option value="congelado">Congelado (freezer)</option>
+              <option value="seco">Ambiente seco</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid-2">
+          <div>
+            <label>Fornecedor</label>
+            <input value={form.fornecedor} onChange={(e) => updateField('fornecedor', e.target.value)} />
+          </div>
+          <div>
+            <label>Observações</label>
+            <input value={form.observacoes} onChange={(e) => updateField('observacoes', e.target.value)} />
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button type="button" className="btn btn-secondary" onClick={onClose} disabled={salvando}>Cancelar</button>
+          <button type="submit" className="btn btn-primary" disabled={salvando}>
+            {salvando ? 'Salvando...' : mode === 'edit' ? 'Atualizar' : 'Salvar'}
           </button>
         </div>
-        <form className="modal-body" onSubmit={handleSubmit}>
-          {erro ? <div className="alert-error">{erro}</div> : null}
-
-          <div className="grid-2">
-            <div>
-              <label>Nome*</label>
-              <input value={form.nome} onChange={(e) => updateField('nome', e.target.value)} />
-            </div>
-            <div>
-              <label>Marca</label>
-              <input value={form.marca} onChange={(e) => updateField('marca', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="grid-3">
-            <div>
-              <label>Categoria</label>
-              <select value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)}>
-                <option value="">Selecione</option>
-                <option value="Cereais">Cereais</option>
-                <option value="Leguminosas">Leguminosas</option>
-                <option value="Oleaginosas">Oleaginosas</option>
-                <option value="Industrializados">Industrializados</option>
-                <option value="Laticínios">Laticínios</option>
-              </select>
-            </div>
-            <div>
-              <label>Lote</label>
-              <input value={form.lote} onChange={(e) => updateField('lote', e.target.value)} />
-            </div>
-            <div>
-              <label>Unidade</label>
-              <select value={form.unidade_medida} onChange={(e) => updateField('unidade_medida', e.target.value)}>
-                <option value="unidade">unidade</option>
-                <option value="kg">kg</option>
-                <option value="g">g</option>
-                <option value="l">l</option>
-                <option value="ml">ml</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid-1">
-            <div>
-              <label>Quantidade*</label>
-              <input type="number" step="0.01" value={form.quantidade} onChange={(e) => updateField('quantidade', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="grid-1">
-            <div>
-              <label>Validade final</label>
-              <input type="date" value={form.validade_final} onChange={(e) => updateField('validade_final', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div>
-              <label>Localização</label>
-              <input value={form.localizacao} onChange={(e) => updateField('localizacao', e.target.value)} />
-            </div>
-            <div>
-              <label>Armazenamento</label>
-              <select value={form.forma_armazenamento} onChange={(e) => updateField('forma_armazenamento', e.target.value)}>
-                <option value="">Selecione</option>
-                <option value="temperatura_ambiente">Temperatura ambiente</option>
-                <option value="refrigerado">Refrigerado (geladeira)</option>
-                <option value="congelado">Congelado (freezer)</option>
-                <option value="seco">Ambiente seco</option>
-                <option value="outro">Outro</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid-2">
-            <div>
-              <label>Fornecedor</label>
-              <input value={form.fornecedor} onChange={(e) => updateField('fornecedor', e.target.value)} />
-            </div>
-            <div>
-              <label>Observações</label>
-              <input value={form.observacoes} onChange={(e) => updateField('observacoes', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose} disabled={salvando}>Cancelar</button>
-            <button type="submit" className="btn btn-primary" disabled={salvando}>
-              {salvando ? 'Salvando...' : mode === 'edit' ? 'Atualizar' : 'Salvar'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   )
 }

@@ -4,6 +4,7 @@ import './Dashboard.css'
 import { listarProdutosRecentes, listarProdutos } from '../services/produtos'
 import { ajustarEstoque } from '../services/inventario'
 import { useNavigate } from 'react-router-dom'
+import Modal from '../components/Modal'
 
 export default function Dashboard() {
   const formatDatePt = (value) => {
@@ -297,84 +298,80 @@ export default function Dashboard() {
         </div>
       </div>
       {saidaAberta ? (
-        <div className="modal-backdrop" onClick={() => setSaidaAberta(false)}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Registrar Saída</h3>
-              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setSaidaAberta(false)}>×</button>
-            </div>
-            <form className="modal-body" onSubmit={confirmarSaida}>
-              {saidaErro ? <div className="alert-error">{saidaErro}</div> : null}
-              <div className="grid-2">
-                <div>
-                  <label>Produto</label>
-                  <select value={saidaForm.produtoId} onChange={(e) => updateSaida('produtoId', e.target.value)}>
-                    <option value="">Selecione</option>
-                    {saidaLista.map(p => (
-                      <option key={p.id} value={p.id}>{p.nome}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label>Quantidade</label>
-                  <input type="number" min="0.01" step="0.01" value={saidaForm.quantidade} onChange={(e) => updateSaida('quantidade', e.target.value)} />
-                </div>
-              </div>
-              <div className="grid-1">
-                <div>
-                  <label>Motivo</label>
-                  <input value={saidaForm.motivo} onChange={(e) => updateSaida('motivo', e.target.value)} placeholder="Ex.: consumo, descarte, doação" />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setSaidaAberta(false)} disabled={saidaCarregando}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={saidaCarregando}>
-                  {saidaCarregando ? 'Salvando...' : 'Confirmar Saída'}
-                </button>
-              </div>
-            </form>
+        <Modal open={saidaAberta} onClose={() => setSaidaAberta(false)} size="sm">
+          <div className="modal-header">
+            <h3>Registrar Saída</h3>
+            <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setSaidaAberta(false)}>×</button>
           </div>
-        </div>
+          <form className="modal-body" onSubmit={confirmarSaida}>
+            {saidaErro ? <div className="alert-error">{saidaErro}</div> : null}
+            <div className="grid-2">
+              <div>
+                <label>Produto</label>
+                <select value={saidaForm.produtoId} onChange={(e) => updateSaida('produtoId', e.target.value)}>
+                  <option value="">Selecione</option>
+                  {saidaLista.map(p => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label>Quantidade</label>
+                <input type="number" min="0.01" step="0.01" value={saidaForm.quantidade} onChange={(e) => updateSaida('quantidade', e.target.value)} />
+              </div>
+            </div>
+            <div className="grid-1">
+              <div>
+                <label>Motivo</label>
+                <input value={saidaForm.motivo} onChange={(e) => updateSaida('motivo', e.target.value)} placeholder="Ex.: consumo, descarte, doação" />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={() => setSaidaAberta(false)} disabled={saidaCarregando}>Cancelar</button>
+              <button type="submit" className="btn btn-primary" disabled={saidaCarregando}>
+                {saidaCarregando ? 'Salvando...' : 'Confirmar Saída'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
       {entradaAberta ? (
-        <div className="modal-backdrop" onClick={() => setEntradaAberta(false)}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Registrar Entrada</h3>
-              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setEntradaAberta(false)}>×</button>
-            </div>
-            <form className="modal-body" onSubmit={confirmarEntrada}>
-              {entradaErro ? <div className="alert-error">{entradaErro}</div> : null}
-              <div className="grid-2">
-                <div>
-                  <label>Produto</label>
-                  <select value={entradaForm.produtoId} onChange={(e) => updateEntrada('produtoId', e.target.value)}>
-                    <option value="">Selecione</option>
-                    {entradaLista.map(p => (
-                      <option key={p.id} value={p.id}>{p.nome}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label>Quantidade</label>
-                  <input type="number" min="0.01" step="0.01" value={entradaForm.quantidade} onChange={(e) => updateEntrada('quantidade', e.target.value)} />
-                </div>
-              </div>
-              <div className="grid-1">
-                <div>
-                  <label>Motivo</label>
-                  <input value={entradaForm.motivo} onChange={(e) => updateEntrada('motivo', e.target.value)} placeholder="Ex.: compra, doação, correção" />
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" onClick={() => setEntradaAberta(false)} disabled={entradaCarregando}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" disabled={entradaCarregando}>
-                  {entradaCarregando ? 'Salvando...' : 'Confirmar Entrada'}
-                </button>
-              </div>
-            </form>
+        <Modal open={entradaAberta} onClose={() => setEntradaAberta(false)} size="sm">
+          <div className="modal-header">
+            <h3>Registrar Entrada</h3>
+            <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setEntradaAberta(false)}>×</button>
           </div>
-        </div>
+          <form className="modal-body" onSubmit={confirmarEntrada}>
+            {entradaErro ? <div className="alert-error">{entradaErro}</div> : null}
+            <div className="grid-2">
+              <div>
+                <label>Produto</label>
+                <select value={entradaForm.produtoId} onChange={(e) => updateEntrada('produtoId', e.target.value)}>
+                  <option value="">Selecione</option>
+                  {entradaLista.map(p => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label>Quantidade</label>
+                <input type="number" min="0.01" step="0.01" value={entradaForm.quantidade} onChange={(e) => updateEntrada('quantidade', e.target.value)} />
+              </div>
+            </div>
+            <div className="grid-1">
+              <div>
+                <label>Motivo</label>
+                <input value={entradaForm.motivo} onChange={(e) => updateEntrada('motivo', e.target.value)} placeholder="Ex.: compra, doação, correção" />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" onClick={() => setEntradaAberta(false)} disabled={entradaCarregando}>Cancelar</button>
+              <button type="submit" className="btn btn-primary" disabled={entradaCarregando}>
+                {entradaCarregando ? 'Salvando...' : 'Confirmar Entrada'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       ) : null}
     </div>
   )

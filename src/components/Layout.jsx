@@ -5,20 +5,37 @@ import './Layout.css'
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const location = useLocation()
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
-    
-    // Fechar sidebar ao mudar de rota em mobile
-    setSidebarOpen(false)
-  }, [location.pathname])
+
+    if (isMobile) setSidebarOpen(false)
+  }, [location.pathname, isMobile])
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 768px)')
+    const sync = () => setIsMobile(mql.matches)
+    sync()
+    mql.addEventListener('change', sync)
+    return () => mql.removeEventListener('change', sync)
+  }, [])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate('/login')
+  }
+
+  const handleToggleSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen((v) => !v)
+    } else {
+      setSidebarCollapsed((v) => !v)
+    }
   }
 
   const menuItems = [
@@ -34,9 +51,10 @@ export default function Layout({ children }) {
   return (
     <div className="layout-wrapper">
       {/* Sidebar Desktop e Mobile */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
-          <h2>NutriCrevin</h2>
+          <h2 className="brand-full">NutriCrevin</h2>
+          <span className="brand-short">NC</span>
         </div>
         
         <nav className="sidebar-nav">
@@ -45,6 +63,7 @@ export default function Layout({ children }) {
               key={item.path} 
               to={item.path} 
               className={`nav-item ${location.pathname === item.path ? 'active' : ''}`}
+              title={sidebarCollapsed ? item.label : undefined}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
@@ -57,7 +76,8 @@ export default function Layout({ children }) {
             <small>{user?.email}</small>
           </div>
           <button onClick={handleLogout} className="btn-logout">
-            🚪 Sair
+            <span className="logout-icon">🚪</span>
+            <span className="logout-label">Sair</span>
           </button>
         </div>
       </aside>
@@ -68,14 +88,15 @@ export default function Layout({ children }) {
       )}
 
       {/* Conteúdo Principal */}
-      <main className="main-content">
+      <main className={`main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <header className="top-bar">
           <button 
             className="menu-toggle" 
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Menu"
+            onClick={handleToggleSidebar}
+            aria-label={isMobile ? 'Abrir menu' : sidebarCollapsed ? 'Expandir navegação' : 'Recolher navegação'}
+            aria-expanded={isMobile ? sidebarOpen : !sidebarCollapsed}
           >
-            ☰
+            {isMobile ? '☰' : sidebarCollapsed ? '❯' : '❮'}
           </button>
           <h1 className="page-title">
             {menuItems.find(i => i.path === location.pathname)?.label || 'NutriCrevin'}

@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import { listarProdutos } from '../services/produtos'
 import { registrarEtiquetas } from '../services/etiquetas'
+import Modal from '../components/Modal'
 
 export default function Etiquetas() {
   const location = useLocation()
@@ -17,6 +18,7 @@ export default function Etiquetas() {
   const [previewPdfOpen, setPreviewPdfOpen] = useState(false)
   const [lastPdfDownload, setLastPdfDownload] = useState('')
   const [pdfFeedback, setPdfFeedback] = useState('')
+  const [previewNarrow, setPreviewNarrow] = useState(false)
 
   const carregar = useCallback(async () => {
     setCarregando(true)
@@ -37,6 +39,14 @@ export default function Etiquetas() {
     const t = setTimeout(carregar, 400)
     return () => clearTimeout(t)
   }, [carregar])
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 900px)')
+    const sync = () => setPreviewNarrow(mql.matches)
+    sync()
+    mql.addEventListener('change', sync)
+    return () => mql.removeEventListener('change', sync)
+  }, [])
 
   function validadePreferencial(p) {
     return p.validade_final || p.validade_original || null
@@ -104,11 +114,11 @@ export default function Etiquetas() {
     const pageH = 842
     const margin = 24
     const gap = 8
-    const cols = colunas === 2 ? 2 : 3
+    const cols = previewNarrow ? 1 : colunas === 2 ? 2 : 3
     const cellH = 180
     const rows = Math.max(1, Math.floor((pageH - margin * 2 + gap) / (cellH + gap)))
     return cols * rows
-  }, [colunas])
+  }, [colunas, previewNarrow])
 
   const paginas = useMemo(() => {
     const res = []
@@ -364,60 +374,58 @@ export default function Etiquetas() {
       </div>
 
       {previewPdfOpen ? (
-        <div className="modal-backdrop" onClick={() => setPreviewPdfOpen(false)}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Pré-visualização do PDF</h3>
-              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setPreviewPdfOpen(false)}>×</button>
+        <Modal open={previewPdfOpen} onClose={() => setPreviewPdfOpen(false)} size="xl">
+          <div className="modal-header">
+            <h3>Pré-visualização do PDF</h3>
+            <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setPreviewPdfOpen(false)}>×</button>
+          </div>
+          <div className="modal-body">
+            <div className="alert alert-info">
+              Confira as etiquetas abaixo. Ao baixar, será gerado somente o arquivo PDF das etiquetas.
             </div>
-            <div className="modal-body">
+            {baixadoHoje ? (
               <div className="alert alert-info">
-                Confira as etiquetas abaixo. Ao baixar, será gerado somente o arquivo PDF das etiquetas.
+                As etiquetas já foram baixadas hoje. Você ainda pode baixar novamente.
               </div>
-              {baixadoHoje ? (
-                <div className="alert alert-info">
-                  As etiquetas já foram baixadas hoje. Você ainda pode baixar novamente.
-                </div>
-              ) : null}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {paginas.map((grupo, pIndex) => (
-                  <div key={`page-${pIndex}`} className="labels-page" style={{ marginBottom: 0 }}>
-                    <div className="labels-grid" style={{ ['--labels-cols']: colunas }}>
-                      {grupo.map((s, idx) => (
-                        <div key={`${s.id}-${pIndex}-${idx}`} className="label-card label-nutri">
-                          <div className="label-nutri-title">{s.nome}</div>
-                          <div className="label-nutri-sub">{s.marca || '-'}</div>
-                          <div className="label-nutri-grid">
-                            <div className="label-nutri-field"><span>Lote</span><strong>{s.lote || '-'}</strong></div>
-                            <div className="label-nutri-field"><span>Manipulação</span><strong>{formatDate(s.manipulacao)}</strong></div>
-                            <div className="label-nutri-field"><span>Validade</span><strong>{formatDate(s.validade)}</strong></div>
-                            <div className="label-nutri-field"><span>Armazenamento</span><strong>{s.armazenamento || '-'}</strong></div>
-                            <div className="label-nutri-field"><span>Quantidade</span><strong>{s.quantidadeProduto || '-'} {s.unidade || ''}</strong></div>
-                          </div>
+            ) : null}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {paginas.map((grupo, pIndex) => (
+                <div key={`page-${pIndex}`} className="labels-page" style={{ marginBottom: 0 }}>
+                  <div className="labels-grid" style={{ ['--labels-cols']: previewNarrow ? 1 : colunas }}>
+                    {grupo.map((s, idx) => (
+                      <div key={`${s.id}-${pIndex}-${idx}`} className="label-card label-nutri">
+                        <div className="label-nutri-title">{s.nome}</div>
+                        <div className="label-nutri-sub">{s.marca || '-'}</div>
+                        <div className="label-nutri-grid">
+                          <div className="label-nutri-field"><span>Lote</span><strong>{s.lote || '-'}</strong></div>
+                          <div className="label-nutri-field"><span>Manipulação</span><strong>{formatDate(s.manipulacao)}</strong></div>
+                          <div className="label-nutri-field"><span>Validade</span><strong>{formatDate(s.validade)}</strong></div>
+                          <div className="label-nutri-field"><span>Armazenamento</span><strong>{s.armazenamento || '-'}</strong></div>
+                          <div className="label-nutri-field"><span>Quantidade</span><strong>{s.quantidadeProduto || '-'} {s.unidade || ''}</strong></div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => setPreviewPdfOpen(false)}>Cancelar</button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={async () => {
-                  setPdfFeedback('')
-                  await gerarPDF()
-                  setPreviewPdfOpen(false)
-                }}
-                disabled={!etiquetas.length}
-              >
-                Baixar PDF
-              </button>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={() => setPreviewPdfOpen(false)}>Cancelar</button>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={async () => {
+                setPdfFeedback('')
+                await gerarPDF()
+                setPreviewPdfOpen(false)
+              }}
+              disabled={!etiquetas.length}
+            >
+              Baixar PDF
+            </button>
+          </div>
+        </Modal>
       ) : null}
     </div>
   )

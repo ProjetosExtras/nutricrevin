@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { listarProdutos, deletarProduto } from '../services/produtos'
 import ProductModal from '../components/ProductModal'
+import Modal from '../components/Modal'
 import './Estoque.css'
 
 export default function Estoque() {
@@ -251,13 +252,12 @@ export default function Estoque() {
         </div>
       ) : null}
       {detalhesAberto ? (
-        <div className="modal-backdrop" onClick={() => setDetalhesAberto(false)}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Detalhes do produto</h3>
-              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setDetalhesAberto(false)}>×</button>
-            </div>
-            <div className="modal-body">
+        <Modal open={detalhesAberto} onClose={() => setDetalhesAberto(false)} size="lg">
+          <div className="modal-header">
+            <h3>Detalhes do produto</h3>
+            <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setDetalhesAberto(false)}>×</button>
+          </div>
+          <div className="modal-body">
               <div className="grid-2">
                 <div>
                   <label>Nome</label>
@@ -321,46 +321,43 @@ export default function Estoque() {
                 </div>
               </div>
             </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" onClick={() => setDetalhesAberto(false)}>Fechar</button>
-            </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-secondary" onClick={() => setDetalhesAberto(false)}>Fechar</button>
           </div>
-        </div>
+        </Modal>
       ) : null}
       {/* Modal de confirmação de exclusão */}
       {excluirAberto ? (
-        <div className="modal-backdrop" onClick={() => setExcluirAberto(false)}>
-          <div className="modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Confirmar exclusão</h3>
-              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setExcluirAberto(false)}>×</button>
-            </div>
-            <div className="modal-body">
-              <p>Tem certeza que deseja excluir o produto <strong>{produtoExcluir?.nome}</strong>?</p>
-              <p>Esta ação não pode ser desfeita.</p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-secondary" onClick={() => setExcluirAberto(false)}>Cancelar</button>
-              <button
-                className="btn btn-primary"
-                style={{ backgroundColor: '#EF4444' }}
-                onClick={async () => {
-                  if (!produtoExcluir) return
-                  const { error } = await deletarProduto(produtoExcluir.id)
-                  if (error) {
-                    alert('Não foi possível excluir. Verifique permissões/RLS no Supabase.')
-                    return
-                  }
-                  setExcluirAberto(false)
-                  setProdutoExcluir(null)
-                  carregar()
-                }}
-              >
-                Excluir
-              </button>
-            </div>
+        <Modal open={excluirAberto} onClose={() => setExcluirAberto(false)} size="sm">
+          <div className="modal-header">
+            <h3>Confirmar exclusão</h3>
+            <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => setExcluirAberto(false)}>×</button>
           </div>
-        </div>
+          <div className="modal-body">
+            <p>Tem certeza que deseja excluir o produto <strong>{produtoExcluir?.nome}</strong>?</p>
+            <p>Esta ação não pode ser desfeita.</p>
+          </div>
+          <div className="modal-footer">
+            <button className="btn btn-secondary" onClick={() => setExcluirAberto(false)}>Cancelar</button>
+            <button
+              className="btn btn-primary"
+              style={{ backgroundColor: '#EF4444' }}
+              onClick={async () => {
+                if (!produtoExcluir) return
+                const { error } = await deletarProduto(produtoExcluir.id)
+                if (error) {
+                  alert('Não foi possível excluir. Verifique permissões/RLS no Supabase.')
+                  return
+                }
+                setExcluirAberto(false)
+                setProdutoExcluir(null)
+                carregar()
+              }}
+            >
+              Excluir
+            </button>
+          </div>
+        </Modal>
       ) : null}
       <ProductModal
         open={abrirNovo}
