@@ -135,6 +135,10 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
             <select value={form.categoria} onChange={(e) => updateField('categoria', e.target.value)}>
               <option value="">Selecione</option>
               <option value="Cereais">Cereais</option>
+              <option value="Aves">Aves</option>
+              <option value="Bovinos">Bovinos</option>
+              <option value="Suínos">Suínos</option>
+              <option value="Peixes">Peixes</option>
               <option value="Leguminosas">Leguminosas</option>
               <option value="Oleaginosas">Oleaginosas</option>
               <option value="Industrializados">Industrializados</option>
