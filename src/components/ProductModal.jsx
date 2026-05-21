@@ -143,6 +143,8 @@ export default function ProductModal({ open, onClose, onCreated, mode = 'create'
               <option value="Oleaginosas">Oleaginosas</option>
               <option value="Industrializados">Industrializados</option>
               <option value="Laticínios">Laticínios</option>
+              <option value="Suplementos">Suplementos</option>
+              <option value="Outros">Outros</option>
             </select>
           </div>
           <div>
