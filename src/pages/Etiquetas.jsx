@@ -449,9 +449,6 @@ export default function Etiquetas() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ marginTop: 8, paddingLeft: 24 }}>
-                    <button className="btn btn-secondary" onClick={() => addProduto(p)}>+ Selecionar</button>
-                  </div>
                 </div>
               ))}
             </div>
