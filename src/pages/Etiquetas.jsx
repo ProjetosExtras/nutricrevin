@@ -19,6 +19,7 @@ export default function Etiquetas() {
   const [lastPdfDownload, setLastPdfDownload] = useState('')
   const [pdfFeedback, setPdfFeedback] = useState('')
   const [previewNarrow, setPreviewNarrow] = useState(false)
+  const [selectedProductIds, setSelectedProductIds] = useState(new Set())
 
   const carregar = useCallback(async () => {
     setCarregando(true)
@@ -57,6 +58,55 @@ export default function Etiquetas() {
     const d = new Date(value)
     if (isNaN(d.getTime())) return '-'
     return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
+
+  const toggleProductSelection = (id) => {
+    setSelectedProductIds(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(id)) {
+        newSet.delete(id)
+      } else {
+        newSet.add(id)
+      }
+      return newSet
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedProductIds.size === produtos.length) {
+      setSelectedProductIds(new Set())
+    } else {
+      setSelectedProductIds(new Set(produtos.map(p => p.id)))
+    }
+  }
+
+  const addSelectedProducts = () => {
+    const productsToAdd = produtos.filter(p => selectedProductIds.has(p.id))
+    setSelecionados(prev => {
+      const existingKeys = new Set(prev.map(x => `${x.id}-${x.lote}`))
+      const newItems = []
+      productsToAdd.forEach(p => {
+        const key = `${p.id}-${p.lote || ''}`
+        if (!existingKeys.has(key)) {
+          const novoSel = {
+            id: p.id,
+            nome: p.nome,
+            marca: p.marca || '',
+            lote: p.lote || '',
+            validade: p.validade_final || p.validade_original || null,
+            manipulacao: p.data_manipulacao || '',
+            armazenamento: p.forma_armazenamento || '',
+            unidade: p.unidade_medida || '',
+            quantidadeProduto: p.quantidade ?? '',
+            qtd: 1,
+          }
+          newItems.push(novoSel)
+          if (!preview) setPreview(novoSel)
+        }
+      })
+      return [...prev, ...newItems]
+    })
+    setSelectedProductIds(new Set())
   }
 
   const addProduto = useCallback((p) => {
@@ -353,17 +403,53 @@ export default function Etiquetas() {
         ) : null}
 
         <div style={{ marginTop: 12 }}>
+          {!carregando && produtos.length > 0 && (
+            <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={selectedProductIds.size === produtos.length && produtos.length > 0}
+                  onChange={toggleSelectAll}
+                />
+                Selecionar todos
+              </label>
+              <button
+                className="btn btn-primary"
+                onClick={addSelectedProducts}
+                disabled={selectedProductIds.size === 0}
+              >
+                Adicionar selecionados ({selectedProductIds.size})
+              </button>
+            </div>
+          )}
           {carregando ? (
             <div className="text-secondary">Carregando...</div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
               {(produtos || []).map((p) => (
-                <div key={p.id} className="card" style={{ padding: 12 }}>
-                  <div style={{ fontWeight: 600 }}>{p.nome}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                    {p.marca || '-'} • Lote: {p.lote || '-'} • Val.: {formatDate(validadePreferencial(p))}
+                <div
+                  key={p.id}
+                  className="card"
+                  style={{
+                    padding: 12,
+                    border: selectedProductIds.has(p.id) ? '2px solid var(--primary-color)' : '1px solid #E5E7EB',
+                    backgroundColor: selectedProductIds.has(p.id) ? 'rgba(5, 150, 105, 0.05)' : 'white'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedProductIds.has(p.id)}
+                      onChange={() => toggleProductSelection(p.id)}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600 }}>{p.nome}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                        {p.marca || '-'} • Lote: {p.lote || '-'} • Val.: {formatDate(validadePreferencial(p))}
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ marginTop: 8 }}>
+                  <div style={{ marginTop: 8, paddingLeft: 24 }}>
                     <button className="btn btn-secondary" onClick={() => addProduto(p)}>+ Selecionar</button>
                   </div>
                 </div>
