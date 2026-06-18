@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { listarProdutos } from '../services/produtos'
+import { listarProdutos, deletarProduto } from '../services/produtos'
+import Modal from '../components/Modal'
 
 export default function Vencimentos() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [produtos, setProdutos] = useState([])
   const [dias, setDias] = useState(30)
+  const [excluirAberto, setExcluirAberto] = useState(false)
+  const [produtoExcluir, setProdutoExcluir] = useState(null)
 
   async function carregar() {
     setCarregando(true)
@@ -135,8 +138,14 @@ export default function Vencimentos() {
                       <td>{p.lote || '-'}</td>
                       <td>{formatDate(p.validade_final || p.validade_original)}</td>
                       <td className="text-right">{p.quantidade ?? '-'}</td>
-                      <td>
+                      <td style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                         <span className="badge badge-red">Vencido</span>
+                        <button className="btn btn-secondary" style={{ padding: '4px 8px', fontSize: 12 }} onClick={() => {
+                          setProdutoExcluir(p)
+                          setExcluirAberto(true)
+                        }}>
+                          🗑️
+                        </button>
                       </td>
                     </tr>
                   )) : (
@@ -188,6 +197,46 @@ export default function Vencimentos() {
               </table>
             </div>
           </div>
+
+          <Modal open={excluirAberto} onClose={() => {
+            setExcluirAberto(false)
+            setProdutoExcluir(null)
+          }} size="sm">
+            <div className="modal-header">
+              <h3>Confirmar exclusão</h3>
+              <button type="button" className="btn btn-secondary" aria-label="Fechar" onClick={() => {
+                setExcluirAberto(false)
+                setProdutoExcluir(null)
+              }}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Tem certeza que deseja excluir o produto <strong>{produtoExcluir?.nome}</strong>?</p>
+              <p>Esta ação não pode ser desfeita.</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={() => {
+                setExcluirAberto(false)
+                setProdutoExcluir(null)
+              }}>Cancelar</button>
+              <button
+                className="btn btn-primary"
+                style={{ backgroundColor: '#EF4444' }}
+                onClick={async () => {
+                  if (!produtoExcluir) return
+                  const { error } = await deletarProduto(produtoExcluir.id)
+                  if (error) {
+                    alert('Não foi possível excluir. Verifique permissões/RLS no Supabase.')
+                    return
+                  }
+                  setExcluirAberto(false)
+                  setProdutoExcluir(null)
+                  carregar()
+                }}
+              >
+                Excluir
+              </button>
+            </div>
+          </Modal>
         </>
       )}
     </div>
